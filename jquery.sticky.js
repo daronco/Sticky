@@ -29,7 +29,11 @@
                     etse = elementTop - s.topSpacing - extra;
                 if (scrollTop <= etse) {
                     if (s.currentTop !== null) {
-                        s.stickyElement.css('position', '').css('top', '').removeClass(s.className);
+                        s.stickyElement
+                            .css('position', '')
+                            .css('top', '')
+                            .css('width', '')
+                            .removeClass(s.className);
                         s.currentTop = null;
                     }
                 }
@@ -43,12 +47,28 @@
                     if (s.currentTop != newTop) {
                         s.stickyElement.css('position', 'fixed').css('top', newTop).addClass(s.className);
                         s.currentTop = newTop;
+                        doResize();
                     }
                 }
             }
         },
+        resizeTimeoutId = 0,
+        doResize = function() {
+            $('.is-sticky').each(function() {
+                element = $(this);
+                wrapper = element.parent();
+                width = wrapper.innerWidth()
+                    - parseInt(element.css('padding-left'))
+                    - parseInt(element.css('padding-right'));
+                if (element.width() != width)
+                    element.css('width', width);
+            });
+        }
         resizer = function() {
             windowHeight = $window.height();
+            // to prevent the method from being executed too many times
+            clearTimeout(resizeTimeoutId);
+            resizeTimeoutId = setTimeout(doResize, 15);
         };
 
     // should be more efficient than using $window.scroll(scroller) and $window.resize(resizer):
@@ -74,7 +94,6 @@
             var elementHeight = stickyElement.outerHeight(),
                 stickyWrapper = stickyElement.parent();
             stickyWrapper
-                .css('width', stickyElement.outerWidth())
                 .css('height', elementHeight)
                 .css('clear', stickyElement.css('clear'));
             sticked.push({
